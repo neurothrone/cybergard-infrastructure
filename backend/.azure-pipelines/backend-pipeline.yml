@@ -1,0 +1,23 @@
+trigger: none
+
+stages:
+  - stage: BuildAndDeploy
+    jobs:
+      - job: Backend
+        steps:
+          - checkout: self
+          - task: UseDotNet@2
+            inputs:
+              packageType: "sdk"
+              version: "8.0.x"
+          - script: |
+              dotnet restore
+              dotnet publish -c Release -o publish
+            displayName: "Build Backend"
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: "CybergardConnection"
+              appType: "webAppLinux"
+              appName: "$(app_service_name)"
+              package: "$(System.DefaultWorkingDirectory)/publish"
+            displayName: "Deploy Backend"
