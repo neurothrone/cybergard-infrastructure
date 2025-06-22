@@ -1,0 +1,20 @@
+trigger: none
+
+stages:
+  - stage: BuildAndDeploy
+    jobs:
+      - job: Frontend
+        steps:
+          - checkout: self
+          - script: |
+              echo "VITE_API_BASE_URL=$(web_api_url)" > .env
+            displayName: "Write API URL to .env"
+          - script: |
+              npm ci
+              npm run build
+            displayName: "Build Frontend"
+          - task: AzureStaticWebApp@0
+            inputs:
+              app_location: "dist"
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
+            displayName: "Deploy Frontend"
