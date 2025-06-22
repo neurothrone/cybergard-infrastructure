@@ -1,0 +1,52 @@
+trigger: none
+
+resources:
+  pipelines:
+    - pipeline: infra
+      source: cybergard-infrastructure/infrastructure-pipeline
+      trigger: none
+    - pipeline: backend
+      source: cybergard-backend/backend-pipeline
+      trigger: none
+    - pipeline: frontend
+      source: cybergard-frontend/frontend-pipeline
+      trigger: none
+
+stages:
+  - stage: Infra
+    jobs:
+      - job: RunInfra
+        steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "specific"
+              project: "CyberGard"
+              pipeline: $(resources.pipeline.infra.pipelineId)
+              buildVersionToDownload: "latest"
+
+  - stage: Backend
+    dependsOn: Infra
+    jobs:
+      - job: RunBackend
+        steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "specific"
+              project: "CyberGard"
+              pipeline: $(resources.pipeline.backend.pipelineId)
+              buildVersionToDownload: "latest"
+
+  - stage: Frontend
+    dependsOn: Backend
+    jobs:
+      - job: RunFrontend
+        steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "specific"
+              project: "CyberGard"
+              pipeline: $(resources.pipeline.frontend.pipelineId)
+              buildVersionToDownload: "latest"
