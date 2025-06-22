@@ -1,0 +1,29 @@
+trigger: none
+
+stages:
+  - stage: Terraform
+    jobs:
+      - job: Apply
+        steps:
+          - checkout: self
+          - script: |
+              cd src/tf
+              terraform init
+              terraform apply -auto-approve \
+                -var "subscription_id=$(subscription_id)" \
+                -var "resource_group_name=$(resource_group_name)" \
+                -var "mongodb_connection_string=$(mongodb_connection_string)" \
+                -var "mongodb_database_name=$(mongodb_database_name)" \
+                -var "service_plan_name=$(service_plan_name)" \
+                -var "app_service_name=$(app_service_name)" \
+                -var "static_site_name=$(static_site_name)" \
+                -var "location=$(location)" \
+                -var "static_site_location=$(static_site_location)"
+            displayName: "Terraform Apply"
+          - script: |
+              cd src/tf
+              terraform output -json > outputs.json
+            displayName: "Export Terraform Outputs"
+          - publish: src/tf/outputs.json
+            artifact: infra-outputs
+            displayName: "Publish Terraform Outputs"
